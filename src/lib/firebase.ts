@@ -1,17 +1,22 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, updateDoc, addDoc, getDocFromServer, enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, updateDoc, addDoc, getDocFromServer, enableIndexedDbPersistence } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
+// Force Long Polling to bypass potential WebSocket blocks common in code environments
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+}, firebaseConfig.firestoreDatabaseId);
+
+// Enable Offline Persistence for robustness
 enableIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
         console.warn('Persistence failed: Multiple tabs open.');
     } else if (err.code === 'unimplemented') {
-        console.warn('Persistence not supported.');
+        console.warn('Persistence not supported by browser.');
     }
 });
 
@@ -63,14 +68,3 @@ export function handleFirestoreError(error: unknown, operationType: FirestoreOp,
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Connection test
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration. The client is offline.");
-    }
-  }
-}
-testConnection();
