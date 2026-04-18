@@ -1,0 +1,6 @@
+{
+  "name": "FLOWINDEX OS v4.7",
+  "description": "DEFEAT EXECUTIVE FUNCTION // SCAN.ASSESS.STREAMLINE.FORGE. Tactical cleaning terminal with live AI inventory tier system.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["AI Content Generation", "Photo Analysis", "Real-time Persistence"]
+}

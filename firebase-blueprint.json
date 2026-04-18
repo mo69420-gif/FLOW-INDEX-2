@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents an operator in the FlowIndex system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "callsign": { "type": "string", "description": "The user's chosen name" },
+        "totalScore": { "type": "number", "description": "Cumulative score across all ops" },
+        "maxStreak": { "type": "number", "description": "Highest streak achieved" },
+        "scenariosCompleted": { "type": "number", "description": "Count of finished ops" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "sound": { "type": "boolean" },
+            "notifications": { "type": "boolean" },
+            "hostility": { "type": "number", "enum": [1, 2, 3, 4, 5] },
+            "hostilityAuto": { "type": "boolean" }
+          }
+        }
+      },
+      "required": ["uid", "callsign"]
+    },
+    "Operation": {
+      "title": "Operation",
+      "description": "A specific cleaning mission/scenario.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "completed", "archived"] },
+        "scanPhoto": { "type": "string", "description": "Base64 or URL of initial room scan" },
+        "scanIntent": { "type": "string" },
+        "sectors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": { "type": "string" },
+              "name": { "type": "string" },
+              "desc": { "type": "string" },
+              "est": { "type": "number" },
+              "targets": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "label": { "type": "string" },
+                    "tier": { "type": "number" },
+                    "why": { "type": "string" },
+                    "effort": { "type": "number" },
+                    "value": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "completedTargets": { "type": "array", "items": { "type": "string" } },
+        "targetActions": { "type": "object" },
+        "totalScore": { "type": "number" },
+        "streak": { "type": "number" },
+        "maxStreak": { "type": "number" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "mood": { "type": "string" }
+      },
+      "required": ["userId", "name", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile and settings."
+    },
+    "/operations/{opId}": {
+      "schema": "Operation",
+      "description": "Historical and active operations."
+    }
+  }
+}
