@@ -3,13 +3,29 @@ import { getAuth, signInAnonymously, onAuthStateChanged, User as FirebaseUser } 
 import { initializeFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, updateDoc, addDoc, getDocFromServer, enableIndexedDbPersistence } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-const app = initializeApp(firebaseConfig);
+// AUDIT: Confirming explicit definitions to prevent initialization failure
+const config = {
+  apiKey: firebaseConfig.apiKey,
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+  storageBucket: firebaseConfig.storageBucket,
+  messagingSenderId: firebaseConfig.messagingSenderId,
+  appId: firebaseConfig.appId,
+  measurementId: firebaseConfig.measurementId,
+  firestoreDatabaseId: firebaseConfig.firestoreDatabaseId
+};
+
+if (!config.projectId || !config.appId) {
+  console.error("CRITICAL: Firebase Configuration Audit Failed. ProjectID or AppID missing.");
+}
+
+const app = initializeApp(config);
 export const auth = getAuth(app);
 
 // Force Long Polling to bypass potential WebSocket blocks common in code environments
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
-}, firebaseConfig.firestoreDatabaseId);
+}, config.firestoreDatabaseId);
 
 // Enable Offline Persistence for robustness
 enableIndexedDbPersistence(db).catch((err) => {

@@ -91,9 +91,10 @@ service cloud.firestore {
       allow delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
     }
 
-    // Default Deny
+    // Allow authenticated reads for system collections (e.g., StoreRecentApplet)
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if isAuthenticated();
+      allow write: if false;
     }
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   auth, db, signInAsGuest
 } from './lib/firebase.ts';
@@ -188,6 +188,18 @@ export default function App() {
   
   // UI State
   const [screen, setScreen] = useState<string>('loading');
+  const [isStalled, setIsStalled] = useState(false);
+
+  // Establishing identity/state
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (screen === 'loading') {
+        setIsStalled(true);
+        log('STALL DETECTED. ANALYZING CONNECTIVITY...');
+      }
+    }, 12000);
+    return () => clearTimeout(timeout);
+  }, [screen]);
 
   // --- Audio Logic ---
   useEffect(() => {
@@ -988,8 +1000,19 @@ export default function App() {
     switch (screen) {
       case 'loading':
         return (
-          <div className="panel flex flex-col items-center justify-center min-h-[100px]">
+          <div className="panel flex flex-col items-center justify-center min-h-[140px]">
             <div className="loading-msg">[SYSTEM] INITIALIZING OS...</div>
+            {isStalled && (
+              <div className="mt-4 p-4 border border-[var(--red)] bg-[var(--red)]/5 text-[var(--red)] text-[10px] animate-pulse text-center w-full">
+                CRITICAL: TACTICAL LINK STALLED.<br/>CHECK CONNECTIVITY OR REBOOT.
+                <button 
+                  className="block mx-auto mt-2 underline uppercase tracking-tighter" 
+                  onClick={() => window.location.reload()}
+                >
+                  [ EMERGENCY REBOOT ]
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -1307,7 +1330,13 @@ That's the point.`}
                     {profile?.settings.hostilityAuto ? calcHostility(profile, history) : profile?.settings.hostility}
                   </span>
                 </div>
-                <div className="hostility-labels"><span>TACTICAL</span><span>AUDITOR</span><span>HOSTILE</span></div>
+                <div className="hostility-labels">
+                  <span>TACTICAL</span>
+                  <span>OPTIMIZED</span>
+                  <span>AUDITOR</span>
+                  <span>HOSTILE</span>
+                  <span>MAXIMUM</span>
+                </div>
               </div>
 
               <div className="toggle-row">
@@ -1398,7 +1427,7 @@ That's the point.`}
                 <div className="flex gap-2 mt-4">
                   <button 
                     className="btn btn-green flex-1 py-4 text-[14px]" 
-                    disabled={scanVideoFrames.length === 0} 
+                    disabled={scanVideoFrames.length === 0 && !scanPhotoData} 
                     onClick={submitScan}
                   >
                     &#62; PROCEED TO AUDIT
